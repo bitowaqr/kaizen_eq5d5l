@@ -9,31 +9,108 @@
 </head>
 <body>
 
-<div class="container">
 
-    <h1>EQ-5D-5L Kaizen Task Demo</h1>
+    <div class="o" onclick="openInfo()">i</div>
+<div class="info">
+    <div class="x" onclick="closeInfo()">x</div>
+    <div class="inventors">Inventors: 
+    <a href="https://link.springer.com/article/10.1007/s40271-021-00541-z" target="_blank" 
+    rel="noopener noreferrer">Craig BM et al. 2021</a>
+    </div>
 
-    <div class="state_container">
+    <div class="inventors">JS code: 
+    <a href="https://github.com/bitowaqr/kaizen_eq5d5l" target="_blank" rel="noopener noreferrer">kaizen_eq5d5l</a>
+    </div>
 
-        <div class = "t_head"> 
-            
-            Header Main Table
-            
-            <div class = "t_main" id = "main_table"> 
-                <div class="cell_h">Current State</div>
-                <div class="cell_h">Which Improvement would you want to have first?</div>
-                
-            </div>
-        </div>
-    
-    
+    &copy; <a href="https://bitowaqr.github.io/" target="_blank" rel="noopener noreferrer">Paul Schneider</a>
+</div>
+
+
+
+<div class="container hidden" id = "completion_msg">
+    <h1>All done  --- Thanks for participating!</h1>
+</div>
+
+<div class="container" id = "kaizen_task">
+
+    <div class="lead">
+        <h3>EQ-5D-5L Kaizen Demo Task</h3>
+
+        
 
     </div>
 
+    <div class="row">
 
+
+
+
+        <div class="state_container">
+            <div class="state_head">
+                Imagine yourself being in this state
+            </div> 
+            <div class="state_tbl">
+                <div class="tbl_inner">
+                    <div class="cell cell_t" id = "A1">A1</div>
+                    <div class="cell" id = "A2">A2</div>
+                    <div class="cell" id = "A3">A3</div>
+                    <div class="cell" id = "A4">A4</div>
+                    <div class="cell cell_b" id = "A5">A5</div>
+                </div>
+            </div>
+        </div>
+
+        
+
+        <div class="state_container">
+
+
+            <div id = "state_head" class="state_head">
+                Which improvement would you want to have FIRST?
+            </div>
+
+            <div id = "dead_head" class="state_head">
+                Is this state better or worse than being dead?
+            </div>
+
+            <div class="state_tbl" id = "stateB">
+                <div class="tbl_inner">
+                    <div class="clickable cell cell_hover cell_t" id = "B1">B1</div>
+                    <div class="clickable cell cell_hover" id = "B2">B2</div>
+                    <div class="clickable cell cell_hover" id = "B3">B3</div>
+                    <div class="clickable cell cell_hover" id = "B4">B4</div>
+                    <div class="clickable cell cell_hover cell_b" id = "B5">B5</div>
+                </div>
+            </div>
+
+
+            <div class="state_tbl" id = "dead_comparison">
+                <div class="tbl_inner tbl_stretch">
+
+                    <div class="modal" id = "note_the_difference">
+                        <img class="exclamation" src="./exclamation-solid.svg" alt="" width="15px">
+                        <h3>Note that the state has been updated with the improvement you selected.    </h3>
+                            <div class="ok_btn" onclick="rmModal()">Ok</div>
+                    </div>
+
+
+                    <div class="clickable cell cell_hover cell_d cell_t" id = "better">Better</div>
+                    <div class="clickable cell cell_hover cell_d cell_b" id = "worse">Worse</div>
+                </div>
+            </div>
+
+
+           
+
+
+
+            
+        </div>
+    </div>
 </div>
 
 <script src="main.js"></script>
+<!-- <script src="axios.min.js"></script> -->
 
 </body>
 </html>

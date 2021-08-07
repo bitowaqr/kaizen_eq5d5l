@@ -1,5 +1,6 @@
 
 
+// ds = descriptive system (object)
 
 const ds = {
 
@@ -43,7 +44,7 @@ const ds = {
         ]
     },
 
-    lvlCols: ["#6A51A3","#807DBA","#9E9AC8","#BCBDDC","#EFEDF5", "lightgray"],
+    lvlCols: ["lightgray","#EFEDF5","#BCBDDC","#9E9AC8","#807DBA","#6A51A3"],
 
     // Methods
 
@@ -75,100 +76,215 @@ const ds = {
 
     // choices
     choice: [],
-
+    
     registerChoice: function (val) {
         this.choice.push(val)
-
+        // if (this.choice.length == 2) {
         if (this.choice.length == this.getDimLvlMax().reduce((a, b) => a + b, 0)) {
-            alert("Yipee - all done!" + "\n\n Your choices:\n"  + this.choice)
+            
+            let task_container = document.querySelector("#kaizen_task")
+            task_container.style.display = "none"
+            
+            let completion_msg = document.querySelector("#completion_msg")
+            completion_msg.style.display = "block"
+        
+            // container.style.display = "none";
+            // alert("All done - thanks for participating!" + "\n\n Your choices:\n"  + this.choice)
         }
-
     },
     getChoices: function () {
         return this.choice
+    },
+
+    dead_choices: [],
+    ongoing: true,
+    registerDeadChoice: function (val) {
+        this.dead_choices.push(val)
+        if (val == 0) {
+            this.ongoing = false
+        } 
+    },
+
+    getDeadChoices: function () {
+        return this.dead_choices
     }
+
 
 }
 
 
-// Collect user clicks
-const res = {
-    choices: [],
-    registerChoice: function (val) {
-        this.choice.push(val)
-    },
-    getChoices: function () {
-        return this.choice
+
+
+// at page load, enter ds levels
+
+// initial state A
+
+
+window.addEventListener('DOMContentLoaded', () => {
+
+    var A = ds.getDimLvlMax()
+
+    // initial state A
+    for (let i = 0; i < ds.getLength(); i++) {
+        index = i + 1;
+        let div = document.querySelector("#A"+index)
+        div.innerHTML = ds.getDimLvl(i, A[i])
+        div.style.backgroundColor = ds.lvlCols[A[i] + 1];
     }
-}
+
+    for (let i = 0; i < ds.getLength(); i++) {
+        index = i + 1;
+        let div = document.querySelector("#B"+index)
+        div.innerHTML = ds.getDimLvl(i, A[i]-1)
+        div.style.backgroundColor = ds.lvlCols[A[i]];
+        div.setAttribute('data-dim', i);
+        div.setAttribute('data-lvl', A[i] - 1);
+        div.addEventListener("click", stateUpdate)
+    }
+
+
+    var better = document.querySelector("#better")
+    better.addEventListener("click", deadUpdate)
+
+    var worse = document.querySelector("#worse")
+    worse.addEventListener("click", deadUpdate)
+
+
+    var stateB = document.querySelector('#stateB');
+    var dead_comparison = document.querySelector('#dead_comparison');
+    var state_head = document.querySelector('#state_head');
+    var dead_head = document.querySelector('#dead_head');
+    // initial state B
+});
 
 
 
-// FADE ANIMATION
-// add animation to clicked elemtn, either fade in our out
+
+
+
 function addFadeAnimation(to, dur, appear = true) {
 
     to.animate([
         {
             opacity: appear ? '0' : '1',
             // fontSize: appear ? '98%' : '102%',
-            transform: appear ? '' : 'scale(0.95, 0.95)',
-            'color': appear ? 'white' : 'white'
+            fontSize: appear ? '' : '18px',
+            'color': appear ? 'black' : 'white'
         },
         {
             opacity: appear ? '1' : '0',
+            fontSize: appear ? '' : '',
             'color': appear ? 'black' : 'white'
         }
     ],{
         duration: dur,
         iterations: 1
     })
-
+    
 }
 
 
 
 
-// on click on child call parent
-function callParent(event) {
-        event.target.parentElement.click()
+
+function toggle(stateB, dead_comparison, ongoing) {
+
+    if (stateB.style.display == "block" && ds.ongoing) {
+        // toggle select improvement
+        stateB.style.display = "none"
+        dead_comparison.style.display = "block"
+        state_head.style.display = "none"
+        dead_head.style.display = "block"
+
+        if (ds.dead_choices.length == 1) {
+            let modal_note = document.querySelector("#note_the_difference")
+            modal_note.style.display = "flex"
+        }
+
+    } else {
+        // toggle select better or worse than dead
+        stateB.style.display = "block"
+        dead_comparison.style.display = "none"
+        state_head.style.display = "block"
+        dead_head.style.display = "none"
+    }
+    
 }
 
 
+function deadUpdate(event, set_dur = 700) {
+
+
+    if (event.target == worse) {
+        ds.registerDeadChoice(parseInt(1))
+        addFadeAnimation(to = worse, dur = set_dur / 2, appear = false)
+        
+        Promise.all(
+            worse.getAnimations().map(
+                function (animation) {
+                    return animation.finished
+                }
+            )
+        ).then(
+            () => {
+                toggle(stateB, dead_comparison, ds.ongoing)
+            }
+        )
+
+
+    } else {
+        ds.registerDeadChoice(parseInt(0))
+        addFadeAnimation(to = better, dur = set_dur / 2, appear = false)
+        
+        Promise.all(
+            better.getAnimations().map(
+                function (animation) {
+                    return animation.finished
+                }
+            )
+        ).then(
+            () => {
+                toggle(stateB, dead_comparison, ds.ongoing)
+            }
+        )
+    }
+}
 
 
 // onClick function to update state table
-function stateUpdate(event, set_dur = 500) {
+function stateUpdate(event, set_dur = 700) {
 
     // get id of clicked element
     const el = event.target;
-    const id = el.id.split("_");
+    const id = el.id.split("");
 
     // break if element doesnt have id yet
     if (Object.keys(id).length < 2) {
         return
     }
 
-    // get parent and rm clickability
+    // rm clickability
     el.removeEventListener('click', stateUpdate);
-    el.firstChild.removeEventListener('click', stateUpdate);
     el.classList.remove("clickable");
 
     // update state A
     update_A = document.querySelector("#A" + id[1]);
 
-    let dim = parseInt(el.firstChild.getAttribute('data-dim'));
-    let lvl = parseInt(el.firstChild.getAttribute('data-lvl'));
-
+    // retrieve selected improvement
+    let dim = parseInt(el.getAttribute('data-dim'));
+    let lvl = parseInt(el.getAttribute('data-lvl'));
+    
+    // animate change in State A
+    addFadeAnimation(to = update_A, dur = set_dur/2, appear = false)
+    
+    // animate click on improvement in state B
     if (lvl > 0) {
-        addFadeAnimation(to = el.firstChild, dur = set_dur / 2, appear = false)
+        addFadeAnimation(to = el, dur = set_dur / 2, appear = false)
     }
-
-
-    addFadeAnimation(to = update_A.firstChild, dur = set_dur/2, appear = false)
-
+    
+    // wait for animation
     Promise.all(
-        update_A.firstChild.getAnimations().map(
+        update_A.getAnimations().map(
             function (animation) {
                 return animation.finished
             }
@@ -176,26 +292,20 @@ function stateUpdate(event, set_dur = 500) {
     ).then(
         () => {
 
-            // let new A state appear
-            // blink(update_A)
-            addFadeAnimation(update_A.firstChild, dur = set_dur/2, appear = true);
-            update_A.firstChild.innerHTML = ds.getDimLvl(dim, lvl);
-            update_A.style.backgroundColor = ds.lvlCols[4-lvl];
+            // let imrpvoement appear in state A
+            addFadeAnimation(update_A, dur = set_dur/2, appear = true);
+            update_A.innerHTML = ds.getDimLvl(dim, lvl);
+            update_A.style.backgroundColor = ds.lvlCols[lvl+1];
 
-
-
-            // let new B State level appear
+            // let next possible improvement appear in State B
             let new_lvl = ds.getDimLvl(dim, lvl - 1);
-            el.firstChild.innerHTML = new_lvl
-            el.style.backgroundColor = ds.lvlCols[4-lvl+1];
+            el.innerHTML = new_lvl
+            el.style.backgroundColor = ds.lvlCols[lvl];
 
+            // re-enable functionality of state B after animation
             if (lvl > 0) {
-                addFadeAnimation(to = el.firstChild, dur = set_dur / 2, appear = true)
-                el.firstChild.setAttribute('data-lvl', lvl - 1);
-            }
-            // if this is max lvl, do not re-enable click listener
-            if (lvl > 0) {
-                // needs to be redefined for some reason
+                addFadeAnimation(to = el, dur = set_dur / 2, appear = true)
+                el.setAttribute('data-lvl', lvl - 1);
                 el.classList.add("clickable");
                 el.addEventListener("click", stateUpdate);
             } else {
@@ -212,94 +322,42 @@ function stateUpdate(event, set_dur = 500) {
 
     // if best level is reached, rm clickable and listener
 
-    
-
-
-
-
+    Promise.all(
+        update_A.getAnimations().map(
+            function (animation) {
+                return animation.finished
+            }
+        )
+    ).then(
+        () => {
+            if (typeof stateB !== 'undefined') {
+                toggle(stateB, dead_comparison, ds.ongoing)
+            }
+        }
+    )
 
 }
 
-// initial table state
-var A = ds.getDimLvlMax()
-
-window.addEventListener('DOMContentLoaded', () => {
-
-    // Table INIT
-    const main_table = document.querySelector("#main_table")
-
-
-    for (let i = 0; i < ds.getLength(); i++) {
-
-        var div = document.createElement("div")
-        div.className = 't_row';
-
-        // state A
-        let cell_A = document.createElement("div");
-        cell_A.className = 'cell_inner';
-        let out_A = document.createElement("div");
-        out_A.id = "A" + i;
-        cell_A.innerHTML = ds.getDimLvl(i, A[i])
-        out_A.className = 'cell_a';
-        out_A.style.backgroundColor = ds.lvlCols[0];
-
-
-        // state B
-        let out_B = document.createElement("div");
-        let cell_B = document.createElement("div");
-        out_B.id = "B_" + i;
-        cell_B.className = 'cell_inner';
-        out_B.className = 'cell_a  clickable';
-        out_B.style.backgroundColor = ds.lvlCols[1];
-        cell_B.innerHTML = ds.getDimLvl(i, A[i]-1)
-        cell_B.setAttribute('data-dim', i);
-        cell_B.setAttribute('data-lvl', A[i] - 1);
-
-        // this seems to be a stupid solution...
-        // but otherwise parent doesnt register click on child?
-        cell_B.addEventListener("click", callParent)
-        out_B.append(cell_B);
-        out_B.addEventListener("click", stateUpdate)
 
 
 
-        // some styling
-        out_A.style.borderLeft = "solid 1px"
-        out_A.style.borderRight = "solid 1px"
+// other site utilities
 
-        out_B.style.borderLeft = "solid 1px"
-        out_B.style.borderRight = "solid 1px"
+function closeInfo() {
+    info = document.querySelector(".info")
+    info.style.display = "none"
+    o = document.querySelector(".o")
+    o.style.display = "block"
+}
+function openInfo() {
+    o = document.querySelector(".o")
+    o.style.display = "none"
+    info = document.querySelector(".info")
+    info.style.display = "block"
+    
+}
 
-
-
-        if (i == 0) {
-            out_A.style.borderTopRightRadius =
-            out_A.style.borderTopLeftRadius =
-            out_B.style.borderTopRightRadius =
-            out_B.style.borderTopLeftRadius = "10px"
-
-            out_A.style.borderTop = "solid 1px"
-            out_B.style.borderTop = "solid 1px"
-        }
-        if (i == ds.getLength() - 1) {
-
-            out_A.style.borderBottomRightRadius =
-            out_A.style.borderBottomLeftRadius =
-            out_B.style.borderBottomRightRadius =
-            out_B.style.borderBottomLeftRadius = "10px"
-
-            out_A.style.borderBottom = "solid 1px"
-            out_B.style.borderBottom = "solid 1px"
-        }
-
-
-        // Table UPDATE
-        out_A.append(cell_A);
-        div.append(out_A);
-
-        div.append(out_B);
-        main_table.append(div)
-
-    }
-
-});
+function rmModal() {
+    modal_note = document.querySelector("#note_the_difference")
+    modal_note.remove();
+}
