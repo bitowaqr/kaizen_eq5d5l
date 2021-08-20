@@ -93,7 +93,7 @@ const ds = {
 
             res = [];
             for (let index = 0; index < this.choice.length; index++) {
-                var step = Object.keys(ds.domains)[this.choice[index]];
+                var step = Object.keys(ds.domains)[this.choice[index]-1];
                 res.push(step);
             }
             
