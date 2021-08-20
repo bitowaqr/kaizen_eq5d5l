@@ -79,7 +79,7 @@ const ds = {
     
     registerChoice: function (val) {
         this.choice.push(val)
-        // if (this.choice.length == 2) {
+        // if (this.choice.length == 4) {
         if (this.choice.length == this.getDimLvlMax().reduce((a, b) => a + b, 0)) {
             
             let task_container = document.querySelector("#kaizen_task")
@@ -87,6 +87,27 @@ const ds = {
             
             let completion_msg = document.querySelector("#completion_msg")
             completion_msg.style.display = "block"
+
+
+            let print_res = document.querySelector("#print_res")
+
+            res = [];
+            for (let index = 0; index < this.choice.length; index++) {
+                var step = Object.keys(ds.domains)[this.choice[index]];
+                res.push(step);
+            }
+            
+             dead_states_n = 0;
+            this.dead_choices.forEach(element => {
+                dead_states_n++;
+            });
+
+
+             print_res.innerHTML = "<hr><h2>Your path was:</h2>" + res.join(", ") +
+                 "<br><hr> <h2>At which choice set became the state better than dead?</h2>" +
+                 dead_states_n
+            
+            
         
             // container.style.display = "none";
             // alert("All done - thanks for participating!" + "\n\n Your choices:\n"  + this.choice)
